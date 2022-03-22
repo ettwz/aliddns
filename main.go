@@ -60,7 +60,7 @@ func main() {
 			addDomainRecordRequest := &alidns20150109.AddDomainRecordRequest{}
 			addDomainRecordRequest.SetDomainName(domainName)
 			addDomainRecordRequest.SetRR(domains[0])
-			addDomainRecordRequest.SetValue(echo.ExtractIPDirect()(c.Request()))
+			addDomainRecordRequest.SetValue(echo.ExtractIPFromXFFHeader()(c.Request()))
 			addDomainRecordRequest.SetType("A")
 			addDomainRecordResponse, err := client.AddDomainRecord(addDomainRecordRequest)
 			if err != nil {
@@ -71,7 +71,7 @@ func main() {
 			updateDomainRecordRequest := &alidns20150109.UpdateDomainRecordRequest{}
 			updateDomainRecordRequest.SetRecordId(recordId)
 			updateDomainRecordRequest.SetRR(domains[0])
-			updateDomainRecordRequest.SetValue(echo.ExtractIPDirect()(c.Request()))
+			updateDomainRecordRequest.SetValue(echo.ExtractIPFromXFFHeader()(c.Request()))
 			updateDomainRecordRequest.SetType("A")
 			updateDomainRecordResponse, err := client.UpdateDomainRecord(updateDomainRecordRequest)
 			if err != nil {
