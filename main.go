@@ -40,6 +40,9 @@ func main() {
 		}
 		domainName := domains[1] + "." + domains[2]
 
+		ip := echo.ExtractIPFromXFFHeader()(c.Request())
+		domainType := "A"
+
 		describeDomainRecordsRequest := &alidns20150109.DescribeDomainRecordsRequest{}
 		describeDomainRecordsRequest.SetDomainName(domainName)
 		describeDomainRecordsResponse, err := client.DescribeDomainRecords(describeDomainRecordsRequest)
@@ -51,6 +54,9 @@ func main() {
 
 		for _, record := range describeDomainRecordsResponse.Body.DomainRecords.Record {
 			if *record.RR == domains[0] {
+				if *record.Value == ip {
+					return c.String(http.StatusOK, "no changes")
+				}
 				recordId = *record.RecordId
 				break
 			}
@@ -60,10 +66,11 @@ func main() {
 			addDomainRecordRequest := &alidns20150109.AddDomainRecordRequest{}
 			addDomainRecordRequest.SetDomainName(domainName)
 			addDomainRecordRequest.SetRR(domains[0])
-			addDomainRecordRequest.SetValue(echo.ExtractIPFromXFFHeader()(c.Request()))
-			addDomainRecordRequest.SetType("A")
+			addDomainRecordRequest.SetValue(ip)
+			addDomainRecordRequest.SetType(domainType)
 			addDomainRecordResponse, err := client.AddDomainRecord(addDomainRecordRequest)
 			if err != nil {
+				e.Logger.Printf("err: ", err.Error())
 				return err
 			}
 			return c.String(http.StatusOK, *addDomainRecordResponse.Body.RecordId)
@@ -71,10 +78,11 @@ func main() {
 			updateDomainRecordRequest := &alidns20150109.UpdateDomainRecordRequest{}
 			updateDomainRecordRequest.SetRecordId(recordId)
 			updateDomainRecordRequest.SetRR(domains[0])
-			updateDomainRecordRequest.SetValue(echo.ExtractIPFromXFFHeader()(c.Request()))
-			updateDomainRecordRequest.SetType("A")
+			updateDomainRecordRequest.SetValue(ip)
+			updateDomainRecordRequest.SetType(domainType)
 			updateDomainRecordResponse, err := client.UpdateDomainRecord(updateDomainRecordRequest)
 			if err != nil {
+				e.Logger.Printf("err: ", err.Error())
 				return err
 			}
 			return c.String(http.StatusOK, *updateDomainRecordResponse.Body.RecordId)
